@@ -23,7 +23,7 @@ const App = () => {
 
         try {
             // Open-Meteo API URL
-            const apiUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&hourly=precipitation,wind_speed_10m&wind_speed_unit=kmh&timezone=auto&forecast_days=2`;
+            const apiUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&hourly=temperature_2m,precipitation,wind_speed_10m&wind_speed_unit=kmh&timezone=auto&forecast_days=2`;
 
             const response = await fetch(apiUrl);
             // Check if the response is OK
@@ -183,6 +183,9 @@ const App = () => {
                         <h2 className="text-2xl font-semibold text-gray-800 mb-3">Current Conditions ({cityName})</h2>
                         <p className="text-gray-700">
                             <span className="font-medium">Time:</span> {formatDate(new Date(weatherData.hourly.time[0]))} {formatTime(new Date(weatherData.hourly.time[0]))}
+                        </p>
+                        <p className="text-gray-700">
+                            <span className="font-medium">Temperature:</span> {weatherData.hourly.temperature_2m[0]} °C
                         </p>
                         <p className="text-gray-700">
                             <span className="font-medium">Precipitation:</span> {weatherData.hourly.precipitation[0]} mm
