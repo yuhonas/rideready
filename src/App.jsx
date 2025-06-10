@@ -186,8 +186,69 @@ const App = () => {
       </p>
       </div>
 
-        <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-        <h3 className="text-lg font-semibold text-gray-800 mb-3">Riding Criteria</h3>
+        {/* Fetch Button */}
+      {/* Loading and Error Messages */}
+      {loading && (
+      <div className="flex items-center justify-center py-4 text-blue-600">
+        <svg className="animate-spin h-5 w-5 mr-3" viewBox="0 0 24 24">
+        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        Loading weather data...
+      </div>
+      )}
+      {error && (
+      <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative mb-4" role="alert">
+        <strong className="font-bold">Error: </strong>
+        <span className="block sm:inline">{error}</span>
+      </div>
+      )}
+
+      {/* Current Weather Display (if data available) */}
+      {weatherData && weatherData.hourly && (
+      <div className="mb-8 p-4 bg-blue-50 rounded-lg shadow-inner">
+        <h2 className="text-2xl font-semibold text-gray-800 mb-3">Current Conditions</h2>
+        <p className="text-gray-700">
+        <span className="font-medium">Temperature:</span>{' '}
+        {(() => {
+          // Find the index for the current hour
+          const now = new Date();
+          // Round to the nearest hour in the weather data's timezone
+          const pad = (n) => n.toString().padStart(2, '0');
+          const localISO = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:00`;
+          const idx = weatherData.hourly.time.findIndex(t => t.startsWith(localISO));
+          return idx !== -1
+          ? `${weatherData.hourly.temperature_2m[idx]} °C`
+          : 'N/A';
+        })()}
+        </p>
+        <p className="text-gray-700">
+        <span className="font-medium">Precipitation:</span> {weatherData.hourly.precipitation[0]} mm
+        </p>
+        <p className="text-gray-700">
+        <span className="font-medium">Wind Speed:</span> {weatherData.hourly.wind_speed_10m[0]} km/h
+        </p>
+      </div>
+      )}
+
+      <button
+      onClick={fetchWeatherData}
+      disabled={loading}
+      className={`w-full py-3 px-4 rounded-lg text-white font-semibold transition duration-300 ${
+        loading ? 'bg-blue-300 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50'
+      } shadow-md mb-6`}
+      >
+      {loading ? 'Fetching Weather...' : 'Refresh Weather Data'}
+      </button>
+
+
+      {/* Riding Criteria */}
+      <>
+      <h2 className="text-2xl font-semibold text-gray-800 mb-4">
+      Suitable Riding Windows
+      </h2>
+      <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+      <p class="mb-6">Select your criteria</p>
         <div className="grid grid-cols-2 gap-4">
           <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -246,67 +307,9 @@ const App = () => {
           />
           </div>
         </div>
-        </div>
-
-        {/* Fetch Button */}
-      <button
-      onClick={fetchWeatherData}
-      disabled={loading}
-      className={`w-full py-3 px-4 rounded-lg text-white font-semibold transition duration-300 ${
-        loading ? 'bg-blue-300 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50'
-      } shadow-md mb-6`}
-      >
-      {loading ? 'Fetching Weather...' : 'Refresh Weather Data'}
-      </button>
-
-      {/* Loading and Error Messages */}
-      {loading && (
-      <div className="flex items-center justify-center py-4 text-blue-600">
-        <svg className="animate-spin h-5 w-5 mr-3" viewBox="0 0 24 24">
-        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
-        Loading weather data...
-      </div>
-      )}
-      {error && (
-      <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative mb-4" role="alert">
-        <strong className="font-bold">Error: </strong>
-        <span className="block sm:inline">{error}</span>
-      </div>
-      )}
-
-      {/* Current Weather Display (if data available) */}
-      {weatherData && weatherData.hourly && (
-      <div className="mb-8 p-4 bg-blue-50 rounded-lg shadow-inner">
-        <h2 className="text-2xl font-semibold text-gray-800 mb-3">Current Conditions</h2>
-        <p className="text-gray-700">
-        <span className="font-medium">Temperature:</span>{' '}
-        {(() => {
-          // Find the index for the current hour
-          const now = new Date();
-          // Round to the nearest hour in the weather data's timezone
-          const pad = (n) => n.toString().padStart(2, '0');
-          const localISO = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:00`;
-          const idx = weatherData.hourly.time.findIndex(t => t.startsWith(localISO));
-          return idx !== -1
-          ? `${weatherData.hourly.temperature_2m[idx]} °C`
-          : 'N/A';
-        })()}
-        </p>
-        <p className="text-gray-700">
-        <span className="font-medium">Precipitation:</span> {weatherData.hourly.precipitation[0]} mm
-        </p>
-        <p className="text-gray-700">
-        <span className="font-medium">Wind Speed:</span> {weatherData.hourly.wind_speed_10m[0]} km/h
-        </p>
-      </div>
-      )}
+      </div></>
 
       {/* Riding Windows Display */}
-      <h2 className="text-2xl font-semibold text-gray-800 mb-4">
-      Suitable Riding Windows
-      </h2>
       <p className="text-sm text-gray-500 mb-4">Based on your criteria, here are the suitable riding windows:</p>
       {ridingWindows.length > 0 ? (
       <ul className="space-y-4">
