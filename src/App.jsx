@@ -111,7 +111,8 @@ const App = () => {
       <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
         <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-2xl">
           <h1 className="text-4xl font-extrabold text-gray-900 mb-6 text-center">
-            🏍️ Ride Ready (Gap Finder)
+            🏍️ POC Ride Ready ({new Date().toLocaleDateString('en-US', { weekday: 'short', day: '2-digit', month: 'long' })}
+          )
           </h1>
 
           {/* Location Input */}
@@ -180,10 +181,7 @@ const App = () => {
           {/* Current Weather Display (if data available) */}
           {weatherData && weatherData.hourly && (
             <div className="mb-8 p-4 bg-blue-50 rounded-lg shadow-inner">
-              <h2 className="text-2xl font-semibold text-gray-800 mb-3">Current Conditions ({cityName})</h2>
-              <p className="text-gray-700">
-                <span className="font-bold">{formatDate(new Date(weatherData.hourly.time[0]))}</span>
-              </p>
+              <h2 className="text-2xl font-semibold text-gray-800 mb-3">Current Conditions</h2>
               <p className="text-gray-700">
                 <span className="font-medium">Temperature:</span>{' '}
                 {(() => {
