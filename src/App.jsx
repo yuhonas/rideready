@@ -235,12 +235,6 @@ const App = () => {
               return (
                 <React.Fragment key={index}>
                 {/* Show date heading above the first window of each day */}
-                {(index === 0 ||
-                formatDate(window.start) !== formatDate(ridingWindows[index - 1].start)) && (
-                <li className="text-md font-bold text-gray-700 mt-6 mb-2 list-none">
-                {formatDate(window.start)}
-                </li>
-                )}
                 <li
                 className={`bg-green-50 p-4 rounded-lg shadow-sm border border-green-200 flex items-center space-x-4 ${
                   isPast ? 'opacity-50 grayscale pointer-events-none' : ''
