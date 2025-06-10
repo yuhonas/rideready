@@ -349,9 +349,6 @@ const App = () => {
         }`}
         >
         {/* Weather Icon */}
-        <span className="text-2xl" title="Clear & Calm">
-        🌤️
-        </span>
         <div className="flex-1">
         <p className="text-lg font-medium text-green-800 flex items-center space-x-2">
           <span>
