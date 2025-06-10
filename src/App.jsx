@@ -206,8 +206,9 @@ const App = () => {
 
       {/* Current Weather Display (if data available) */}
       {weatherData && weatherData.hourly && (
-      <div className="mb-8 p-4 bg-blue-50 rounded-lg shadow-inner">
+        <>
         <h2 className="text-2xl font-semibold text-gray-800 mb-3">Current Conditions</h2>
+      <div className="mb-8 p-4 bg-blue-50 rounded-lg shadow-inner">
         <p className="text-gray-700">
         <span className="font-medium">Temperature:</span>{' '}
         {(() => {
@@ -228,7 +229,7 @@ const App = () => {
         <p className="text-gray-700">
         <span className="font-medium">Wind Speed:</span> {weatherData.hourly.wind_speed_10m[0]} km/h
         </p>
-      </div>
+      </div></>
       )}
 
       <button
@@ -247,8 +248,8 @@ const App = () => {
       <h2 className="text-2xl font-semibold text-gray-800 mb-4">
       Suitable Riding Windows
       </h2>
-      <div className="mb-6 p-4 bg-gray-50 rounded-lg">
       <p class="mb-6">Select your criteria</p>
+      <div className="mb-6 p-4 bg-gray-50 rounded-lg">
         <div className="grid grid-cols-2 gap-4">
           <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
