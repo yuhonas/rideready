@@ -8,10 +8,16 @@ const App = () => {
   const [longitude, setLongitude] = useState(null);
 
   // State for riding criteria
-  const [maxPrecipitation, setMaxPrecipitation] = useState(0);
-  const [maxWindSpeed, setMaxWindSpeed] = useState(20);
-  const [minTemperature, setMinTemperature] = useState(10);
-  const [maxTemperature, setMaxTemperature] = useState(35);
+  // Default riding criteria constants
+  const DEFAULT_MAX_WIND_SPEED = 20;
+  const DEFAULT_MIN_TEMPERATURE = 10;
+  const DEFAULT_MAX_TEMPERATURE = 35;
+  const DEFAULT_MAX_PRECIPITATION = 0;
+
+  const [maxPrecipitation, setMaxPrecipitation] = useState(DEFAULT_MAX_PRECIPITATION);
+  const [maxWindSpeed, setMaxWindSpeed] = useState(DEFAULT_MAX_WIND_SPEED);
+  const [minTemperature, setMinTemperature] = useState(DEFAULT_MIN_TEMPERATURE);
+  const [maxTemperature, setMaxTemperature] = useState(DEFAULT_MAX_TEMPERATURE);
 
   // Get user's location on component mount
   useEffect(() => {
@@ -351,17 +357,23 @@ const App = () => {
           <span>
           {formatTime(window.start)} - {formatTime(window.end)}
           </span>
-          <span className="inline-flex items-center ml-3 text-gray-700 text-base font-semibold">
+          <span className="inline-flex items-center ml-3 text-gray-700 text-sm font-semibold">
           <span className="mr-1" title="Temperature">🌡️</span>
           {temp}°C
           </span>
-          <span className="inline-flex items-center ml-3 text-gray-700 text-base font-semibold">
+          <span className="inline-flex items-center ml-3 text-gray-700 text-sm font-semibold">
           <span className="mr-1" title="Wind Speed">💨</span>
           {startIndex !== -1
           ? `${weatherData.hourly.wind_speed_10m[startIndex]} km/h`
           : 'N/A'}
           </span>
-          <span className="inline-flex items-center ml-3 text-gray-700 text-base font-semibold">
+          <span className="inline-flex items-center ml-3 text-gray-700 text-sm font-semibold">
+          <span className="mr-1" title="Precipitation">🌧️</span>
+          {startIndex !== -1
+          ? `${weatherData.hourly.precipitation[startIndex]} mm`
+          : 'N/A'}
+          </span>
+          <span className="inline-flex items-center ml-3 text-gray-700 text-sm font-semibold">
           <span className="mr-1" title="Window Length">⏱️</span>
           {windowLengthHours} hr{windowLengthHours !== 1 ? 's' : ''}
           </span>
