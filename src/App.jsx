@@ -101,16 +101,16 @@ const App = () => {
       const dateTime = new Date(time[i]);
       const dayKey = dateTime.toDateString();
       const hour = dateTime.getHours();
-      
+
       hoursSet.add(hour);
-      
+
       if (!dayMap.has(dayKey)) {
         dayMap.set(dayKey, {
           date: dateTime,
           hours: new Map()
         });
       }
-      
+
       // Check if conditions are suitable for riding
       const isSuitable =
         precipitation[i] <= maxPrecipitation &&
@@ -128,8 +128,8 @@ const App = () => {
     }
 
     const days = Array.from(dayMap.values()).sort((a, b) => a.date - b.date);
-    const hours = Array.from(hoursSet).sort((a, b) => a - b);
-    
+    const hours = Array.from(hoursSet).sort((a, b) => a - b).filter(hour => hour >= 6);
+
     // Create grid data with days as rows and hours as columns
     const grid = days.map(day => ({
       day,
@@ -321,14 +321,15 @@ const App = () => {
           <div className="min-w-max">
             {/* Header with hours */}
             <div className="grid gap-1 mb-2" style={{gridTemplateColumns: `120px repeat(${hours.length}, 80px)`}}>
-              <div className="p-2 text-xs font-medium text-gray-600">Day</div>
+              <div className="p-2 text-xs text-gray-600 font-extrabold
+">Day</div>
               {hours.map((hour, index) => (
                 <div key={index} className="p-2 text-xs font-medium text-gray-600 text-center">
                   {formatTime(new Date(new Date().setHours(hour, 0, 0, 0)))}
                 </div>
               ))}
             </div>
-            
+
             {/* Grid rows with days and weather blocks */}
             <div className="space-y-1">
               {grid.map((row, rowIndex) => (
