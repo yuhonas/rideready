@@ -130,10 +130,10 @@ const App = () => {
     const days = Array.from(dayMap.values()).sort((a, b) => a.date - b.date);
     const hours = Array.from(hoursSet).sort((a, b) => a - b);
     
-    // Create grid data
-    const grid = hours.map(hour => ({
-      hour,
-      days: days.map(day => day.hours.get(hour) || null)
+    // Create grid data with days as rows and hours as columns
+    const grid = days.map(day => ({
+      day,
+      hours: hours.map(hour => day.hours.get(hour) || null)
     }));
 
     return { days, hours, grid };
@@ -319,24 +319,24 @@ const App = () => {
       {days.length > 0 ? (
         <div className="overflow-x-auto">
           <div className="min-w-max">
-            {/* Header with days */}
-            <div className="grid gap-1 mb-2" style={{gridTemplateColumns: `80px repeat(${days.length}, 120px)`}}>
-              <div className="p-2 text-xs font-medium text-gray-600">Time</div>
-              {days.map((day, index) => (
+            {/* Header with hours */}
+            <div className="grid gap-1 mb-2" style={{gridTemplateColumns: `120px repeat(${hours.length}, 80px)`}}>
+              <div className="p-2 text-xs font-medium text-gray-600">Day</div>
+              {hours.map((hour, index) => (
                 <div key={index} className="p-2 text-xs font-medium text-gray-600 text-center">
-                  {formatDate(day.date)}
+                  {formatTime(new Date(new Date().setHours(hour, 0, 0, 0)))}
                 </div>
               ))}
             </div>
             
-            {/* Grid rows with hours and weather blocks */}
+            {/* Grid rows with days and weather blocks */}
             <div className="space-y-1">
               {grid.map((row, rowIndex) => (
-                <div key={rowIndex} className="grid gap-1" style={{gridTemplateColumns: `80px repeat(${days.length}, 120px)`}}>
+                <div key={rowIndex} className="grid gap-1" style={{gridTemplateColumns: `120px repeat(${hours.length}, 80px)`}}>
                   <div className="p-2 text-xs font-medium text-gray-600 flex items-center">
-                    {formatTime(new Date(new Date().setHours(row.hour, 0, 0, 0)))}
+                    {formatDate(row.day.date)}
                   </div>
-                  {row.days.map((cell, cellIndex) => (
+                  {row.hours.map((cell, cellIndex) => (
                     <div
                       key={cellIndex}
                       className={`p-2 rounded text-xs border transition-all duration-200 hover:scale-105 ${
