@@ -250,7 +250,7 @@ const App = () => {
       {/* Riding Criteria */}
       <>
       <h2 className="text-2xl font-semibold text-gray-800 mb-4">
-      Suitable Riding Windows
+      Suitable Forecasted Riding Windows
       </h2>
       <p className="mb-6">Select your criteria</p>
       <div className="mb-6 p-4 bg-gray-50 rounded-lg">
