@@ -317,56 +317,68 @@ const App = () => {
       {/* Weather Grid Display */}
       <p className="text-sm text-gray-500 mb-4">Green blocks indicate suitable riding conditions based on your criteria:</p>
       {days.length > 0 ? (
-        <div className="overflow-x-auto">
-          <div className="min-w-max">
-            {/* Header with hours */}
-            <div className="grid gap-1 mb-2" style={{gridTemplateColumns: `120px repeat(${hours.length}, 80px)`}}>
-              <div className="p-2 text-xs text-gray-600 font-extrabold
-">Day</div>
-              {hours.map((hour, index) => (
-                <div key={index} className="p-2 text-xs font-medium text-gray-600 text-center">
-                  {formatTime(new Date(new Date().setHours(hour, 0, 0, 0)))}
+        <div className="relative overflow-hidden">
+          <div className="flex">
+            {/* Fixed Day Column */}
+            <div className="flex-shrink-0 bg-white border-r border-gray-200 z-10">
+              {/* Day Header */}
+              <div className="p-2 text-xs text-gray-600 font-extrabold h-10 flex items-center border-b border-gray-200 bg-gray-50">
+                Day
+              </div>
+              {/* Day Rows */}
+              {grid.map((row, rowIndex) => (
+                <div key={rowIndex} className="p-2 text-xs font-medium text-gray-600 flex items-center h-16 border-b border-gray-100 last:border-b-0 bg-white min-w-[120px]">
+                  {formatDate(row.day.date)}
                 </div>
               ))}
             </div>
 
-            {/* Grid rows with days and weather blocks */}
-            <div className="space-y-1">
-              {grid.map((row, rowIndex) => (
-                <div key={rowIndex} className="grid gap-1" style={{gridTemplateColumns: `120px repeat(${hours.length}, 80px)`}}>
-                  <div className="p-2 text-xs font-medium text-gray-600 flex items-center">
-                    {formatDate(row.day.date)}
-                  </div>
-                  {row.hours.map((cell, cellIndex) => (
-                    <div
-                      key={cellIndex}
-                      className={`p-2 rounded text-xs border transition-all duration-200 hover:scale-105 ${
-                        !cell
-                          ? 'bg-gray-100 border-gray-200'
-                          : cell.isPast
-                          ? 'bg-gray-200 border-gray-300 opacity-50'
-                          : cell.suitable
-                          ? 'bg-green-100 border-green-300 hover:bg-green-200'
-                          : 'bg-red-50 border-red-200'
-                      }`}
-                      title={
-                        cell
-                          ? `${cell.temperature}°C, ${cell.windSpeed}km/h, ${cell.precipitation}mm${cell.isPast ? ' (past)' : ''}`
-                          : 'No data'
-                      }
-                    >
-                      {cell && (
-                        <div className="flex flex-col items-center justify-center h-12">
-                          <div className="font-medium">{Math.round(cell.temperature)}°C</div>
-                          <div className="text-xs text-gray-600">
-                            {cell.windSpeed}km/h
-                          </div>
-                        </div>
-                      )}
+            {/* Scrollable Hours Section */}
+            <div className="overflow-x-auto flex-1">
+              <div className="min-w-max">
+                {/* Hours Header */}
+                <div className="flex gap-1 h-10 border-b border-gray-200 bg-gray-50">
+                  {hours.map((hour, index) => (
+                    <div key={index} className="p-2 text-xs font-medium text-gray-600 text-center min-w-[80px] flex items-center justify-center">
+                      {formatTime(new Date(new Date().setHours(hour, 0, 0, 0)))}
                     </div>
                   ))}
                 </div>
-              ))}
+
+                {/* Weather Grid Rows */}
+                {grid.map((row, rowIndex) => (
+                  <div key={rowIndex} className="flex gap-1 h-16 border-b border-gray-100 last:border-b-0">
+                    {row.hours.map((cell, cellIndex) => (
+                      <div
+                        key={cellIndex}
+                        className={`p-2 rounded text-xs border transition-all duration-200 hover:scale-105 min-w-[80px] ${
+                          !cell
+                            ? 'bg-gray-100 border-gray-200'
+                            : cell.isPast
+                            ? 'bg-gray-200 border-gray-300 opacity-50'
+                            : cell.suitable
+                            ? 'bg-green-100 border-green-300 hover:bg-green-200'
+                            : 'bg-red-50 border-red-200'
+                        }`}
+                        title={
+                          cell
+                            ? `${cell.temperature}°C, ${cell.windSpeed}km/h, ${cell.precipitation}mm${cell.isPast ? ' (past)' : ''}`
+                            : 'No data'
+                        }
+                      >
+                        {cell && (
+                          <div className="flex flex-col items-center justify-center h-12">
+                            <div className="font-medium">{Math.round(cell.temperature)}°C</div>
+                            <div className="text-xs text-gray-600">
+                              {cell.windSpeed}km/h
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
