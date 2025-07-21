@@ -64,7 +64,7 @@ const App = () => {
 
     try {
       // Open-Meteo API URL
-      const apiUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&hourly=temperature_2m,precipitation,wind_speed_10m&wind_speed_unit=kmh&timezone=auto&forecast_days=2`;
+      const apiUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&hourly=temperature_2m,precipitation,wind_speed_10m&wind_speed_unit=kmh&timezone=auto&forecast_days=7`;
 
       const response = await fetch(apiUrl);
       // Check if the response is OK
@@ -86,62 +86,60 @@ const App = () => {
     fetchWeatherData();
   }, [fetchWeatherData]); // Dependency array ensures it runs when fetchWeatherData changes (which is on initial render and when lat/lon change)
 
-  // Function to find suitable riding windows
-  const findRidingWindows = () => {
+  // Function to organize weather data into grid format
+  const organizeWeatherGrid = () => {
     if (!weatherData || !weatherData.hourly) {
-      return []; // Return empty array if no data
+      return { days: [], hours: [], grid: [] };
     }
 
     const { time, precipitation, wind_speed_10m, temperature_2m } = weatherData.hourly;
-    const ridingWindows = [];
-    let currentWindowStart = null;
+    const dayMap = new Map();
+    const hoursSet = new Set();
 
-    // Iterate through hourly forecast data
+    // Group data by day and collect all hours
     for (let i = 0; i < time.length; i++) {
       const dateTime = new Date(time[i]);
-      const currentPrecipitation = precipitation[i];
-      const currentWindSpeed = wind_speed_10m[i];
-      const currentTemperature = temperature_2m[i];
-
-      // Check if conditions are suitable for riding based on user criteria
-      const isSuitable =
-        currentPrecipitation <= maxPrecipitation &&
-        currentWindSpeed <= maxWindSpeed &&
-        currentTemperature >= minTemperature &&
-        currentTemperature <= maxTemperature;
-
-      if (isSuitable) {
-        // If suitable and no window is currently open, start a new window
-        if (currentWindowStart === null) {
-          currentWindowStart = dateTime;
-        }
-      } else {
-        // If not suitable and a window was open, close it
-        if (currentWindowStart !== null) {
-          ridingWindows.push({
-            start: currentWindowStart,
-            end: dateTime // End time is the start of the unsuitable hour
-          });
-          currentWindowStart = null;
-        }
+      const dayKey = dateTime.toDateString();
+      const hour = dateTime.getHours();
+      
+      hoursSet.add(hour);
+      
+      if (!dayMap.has(dayKey)) {
+        dayMap.set(dayKey, {
+          date: dateTime,
+          hours: new Map()
+        });
       }
-    }
+      
+      // Check if conditions are suitable for riding
+      const isSuitable =
+        precipitation[i] <= maxPrecipitation &&
+        wind_speed_10m[i] <= maxWindSpeed &&
+        temperature_2m[i] >= minTemperature &&
+        temperature_2m[i] <= maxTemperature;
 
-    // After the loop, if a window is still open, close it (means it extends to the end of the forecast)
-    if (currentWindowStart !== null) {
-      const lastTime = new Date(time[time.length - 1]);
-      // Add 1 hour to the last reported time as it represents the start of that hour
-      const lastForecastEnd = new Date(lastTime.getTime() + 60 * 60 * 1000);
-      ridingWindows.push({
-        start: currentWindowStart,
-        end: lastForecastEnd
+      dayMap.get(dayKey).hours.set(hour, {
+        suitable: isSuitable,
+        temperature: temperature_2m[i],
+        precipitation: precipitation[i],
+        windSpeed: wind_speed_10m[i],
+        isPast: dateTime < new Date()
       });
     }
 
-    return ridingWindows;
+    const days = Array.from(dayMap.values()).sort((a, b) => a.date - b.date);
+    const hours = Array.from(hoursSet).sort((a, b) => a - b);
+    
+    // Create grid data
+    const grid = hours.map(hour => ({
+      hour,
+      days: days.map(day => day.hours.get(hour) || null)
+    }));
+
+    return { days, hours, grid };
   };
 
-  const ridingWindows = findRidingWindows();
+  const { days, hours, grid } = organizeWeatherGrid();
 
   // Helper to format date for display
   const formatDate = (date) => date.toLocaleDateString('en-AU', {
@@ -155,9 +153,9 @@ const App = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-    <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-2xl">
+    <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-6xl">
       <h1 className="text-4xl font-extrabold text-gray-900 mb-6 text-center">
-      🏍️ POC Ride Ready ({new Date().toLocaleDateString('en-US', { weekday: 'short', day: '2-digit', month: 'long' })})
+      🏍️ POC Ride Ready - 7 Day Forecast
       </h1>
 
       {/* Location Input */}
@@ -174,14 +172,14 @@ const App = () => {
       <div className="flex space-x-4">
         <input
         type="text"
-        value={latitude}
+        value={latitude || ''}
         onChange={(e) => setLatitude(e.target.value)}
         placeholder="Latitude"
         className="w-1/2 p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
         />
         <input
         type="text"
-        value={longitude}
+        value={longitude || ''}
         onChange={(e) => setLongitude(e.target.value)}
         placeholder="Longitude"
         className="w-1/2 p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
@@ -254,7 +252,7 @@ const App = () => {
       <h2 className="text-2xl font-semibold text-gray-800 mb-4">
       Suitable Riding Windows
       </h2>
-      <p class="mb-6">Select your criteria</p>
+      <p className="mb-6">Select your criteria</p>
       <div className="mb-6 p-4 bg-gray-50 rounded-lg">
         <div className="grid grid-cols-2 gap-4">
           <div>
@@ -316,78 +314,68 @@ const App = () => {
         </div>
       </div></>
 
-      {/* Riding Windows Display */}
-      <p className="text-sm text-gray-500 mb-4">Based on your criteria, here are the suitable riding windows:</p>
-      {ridingWindows.length > 0 ? (
-      <ul className="space-y-4">
-      {ridingWindows.map((window, index) => {
-        // Find the index of the start time in the weather data
-        const startIndex = weatherData.hourly.time.findIndex(
-        t => new Date(t).getTime() === window.start.getTime()
-        );
-        // Use the temperature at the start of the window
-        const temp =
-        startIndex !== -1
-        ? weatherData.hourly.temperature_2m[startIndex]
-        : 'N/A';
-
-        // Calculate window length in hours
-        const windowLengthHours = Math.round(
-        (window.end - window.start) / (1000 * 60 * 60)
-        );
-
-        // Determine if the window is in the past
-        const now = new Date();
-        const isPast = window.end <= now;
-
-        return (
-        <React.Fragment key={index}>
-        {/* Show date heading above the first window of each day */}
-        <li
-        className={`bg-green-50 p-4 rounded-lg shadow-sm border border-green-200 flex items-center space-x-4 ${
-          isPast ? 'opacity-50 grayscale pointer-events-none' : ''
-        }`}
-        >
-        {/* Weather Icon */}
-        <div className="flex-1">
-        <p className="text-lg font-medium text-green-800 flex items-center space-x-2">
-          <span>
-          {formatTime(window.start)} - {formatTime(window.end)}
-          </span>
-          <span className="inline-flex items-center ml-3 text-gray-700 text-sm font-semibold">
-          <span className="mr-1" title="Temperature">🌡️</span>
-          {temp}°C
-          </span>
-          <span className="inline-flex items-center ml-3 text-gray-700 text-sm font-semibold">
-          <span className="mr-1" title="Wind Speed">💨</span>
-          {startIndex !== -1
-          ? `${weatherData.hourly.wind_speed_10m[startIndex]} km/h`
-          : 'N/A'}
-          </span>
-          <span className="inline-flex items-center ml-3 text-gray-700 text-sm font-semibold">
-          <span className="mr-1" title="Precipitation">🌧️</span>
-          {startIndex !== -1
-          ? `${weatherData.hourly.precipitation[startIndex]} mm`
-          : 'N/A'}
-          </span>
-          <span className="inline-flex items-center ml-3 text-gray-700 text-sm font-semibold">
-          <span className="mr-1" title="Window Length">⏱️</span>
-          {windowLengthHours} hr{windowLengthHours !== 1 ? 's' : ''}
-          </span>
-        </p>
+      {/* Weather Grid Display */}
+      <p className="text-sm text-gray-500 mb-4">Green blocks indicate suitable riding conditions based on your criteria:</p>
+      {days.length > 0 ? (
+        <div className="overflow-x-auto">
+          <div className="min-w-max">
+            {/* Header with days */}
+            <div className="grid gap-1 mb-2" style={{gridTemplateColumns: `80px repeat(${days.length}, 120px)`}}>
+              <div className="p-2 text-xs font-medium text-gray-600">Time</div>
+              {days.map((day, index) => (
+                <div key={index} className="p-2 text-xs font-medium text-gray-600 text-center">
+                  {formatDate(day.date)}
+                </div>
+              ))}
+            </div>
+            
+            {/* Grid rows with hours and weather blocks */}
+            <div className="space-y-1">
+              {grid.map((row, rowIndex) => (
+                <div key={rowIndex} className="grid gap-1" style={{gridTemplateColumns: `80px repeat(${days.length}, 120px)`}}>
+                  <div className="p-2 text-xs font-medium text-gray-600 flex items-center">
+                    {formatTime(new Date(new Date().setHours(row.hour, 0, 0, 0)))}
+                  </div>
+                  {row.days.map((cell, cellIndex) => (
+                    <div
+                      key={cellIndex}
+                      className={`p-2 rounded text-xs border transition-all duration-200 hover:scale-105 ${
+                        !cell
+                          ? 'bg-gray-100 border-gray-200'
+                          : cell.isPast
+                          ? 'bg-gray-200 border-gray-300 opacity-50'
+                          : cell.suitable
+                          ? 'bg-green-100 border-green-300 hover:bg-green-200'
+                          : 'bg-red-50 border-red-200'
+                      }`}
+                      title={
+                        cell
+                          ? `${cell.temperature}°C, ${cell.windSpeed}km/h, ${cell.precipitation}mm${cell.isPast ? ' (past)' : ''}`
+                          : 'No data'
+                      }
+                    >
+                      {cell && (
+                        <div className="flex flex-col items-center justify-center h-12">
+                          <div className="font-medium">{Math.round(cell.temperature)}°C</div>
+                          <div className="text-xs text-gray-600">
+                            {cell.windSpeed}km/h
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
-        </li>
-        </React.Fragment>
-        );
-      })}
-      </ul>
       ) : (
-      !loading && !error && weatherData && (
-      <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded-lg relative" role="alert">
-        <strong className="font-bold">No windows found!</strong>
-        <span className="block sm:inline"> No suitable riding windows found in the next 48 hours based on your criteria.</span>
-      </div>
-      )
+        !loading && !error && weatherData && (
+          <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded-lg relative" role="alert">
+            <strong className="font-bold">No data available!</strong>
+            <span className="block sm:inline"> Unable to load weather data for the forecast period.</span>
+          </div>
+        )
       )}
       <div className="mt-8 text-center text-gray-500 text-xs">
       <p>Powered by Open-Meteo.com</p>
