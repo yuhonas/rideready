@@ -337,7 +337,7 @@ const App = () => {
             <div className="overflow-x-auto flex-1">
               <div className="min-w-max">
                 {/* Hours Header */}
-                <div className="flex gap-1 h-10 border-b border-gray-200 bg-gray-50">
+                <div className="flex h-10 border-b border-gray-200 bg-gray-50">
                   {hours.map((hour, index) => (
                     <div key={index} className="p-2 text-xs font-medium text-gray-600 text-center min-w-[80px] flex items-center justify-center">
                       {formatTime(new Date(new Date().setHours(hour, 0, 0, 0)))}
@@ -347,18 +347,18 @@ const App = () => {
 
                 {/* Weather Grid Rows */}
                 {grid.map((row, rowIndex) => (
-                  <div key={rowIndex} className="flex gap-1 h-16 border-b border-gray-100 last:border-b-0">
+                  <div key={rowIndex} className="flex h-16 border-b border-gray-100 last:border-b-0">
                     {row.hours.map((cell, cellIndex) => (
                       <div
                         key={cellIndex}
-                        className={`p-2 rounded text-xs border transition-all duration-200 hover:scale-105 min-w-[80px] ${
+                        className={`p-2 text-xs transition-all duration-200 hover:scale-105 min-w-[80px] ${
                           !cell
-                            ? 'bg-gray-100 border-gray-200'
+                            ? 'bg-gray-100'
                             : cell.isPast
-                            ? 'bg-gray-200 border-gray-300 opacity-50'
+                            ? 'bg-gray-200 opacity-50'
                             : cell.suitable
-                            ? 'bg-green-100 border-green-300 hover:bg-green-200'
-                            : 'bg-red-50 border-red-200'
+                            ? 'bg-green-100 hover:bg-green-200'
+                            : 'bg-red-50'
                         }`}
                         title={
                           cell
