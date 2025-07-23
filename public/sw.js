@@ -1,10 +1,8 @@
 const CACHE_NAME = 'ride-ready-v1';
 const urlsToCache = [
   '/',
-  '/src/main.jsx',
-  '/src/App.jsx',
-  '/src/App.css',
-  '/src/index.css',
+  '/index.html',
+  '/site.webmanifest',
   '/android-chrome-192x192.png',
   '/android-chrome-512x512.png',
   '/apple-touch-icon.png',
